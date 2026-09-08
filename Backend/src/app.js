@@ -8,26 +8,35 @@ app.use(express.json())
 app.use(cookieParser())
 
 
+const cors = require('cors');
+
 const allowedOrigins = [
-  'http://localhost:5173',               // Local Testing
-  'https://your-frontend.vercel.app'        // Aapka Exact Vercel URL
+  'http://localhost:5173'
+  //'https://frontendxyz.vercel.app'
 ];
 
 app.use(cors({
   origin: function (origin, callback) {
-    if (!origin || allowedOrigins.indexOf(origin) !== -1) {
+    // Postman / Mobile apps (!origin) allow karein
+    if (!origin) return callback(null, true);
+    
+    // Check if origin is in allowedOrigins or is a Vercel preview URL
+    const isAllowed = allowedOrigins.includes(origin) || origin.endsWith('.vercel.app');
+
+    if (isAllowed) {
       callback(null, true);
     } else {
-      callback(new Error('Not allowed by CORS'));
+      callback(new Error('Blocked by CORS policy'));
     }
   },
   credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
 }));
 
-// Preflight OPTIONS requests ko handle karne ke liye
+// Explicitly handle preflight requests for all routes
 app.options('*', cors());
+
 
 // const allowedOrigins = [
 //   'http://localhost:5173',                   // Aapka Local Vite Frontend
