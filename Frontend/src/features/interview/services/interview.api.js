@@ -1,7 +1,9 @@
 import axios from "axios"
+const BASE_URL = import.meta.env.VITE_BASE_URL;
 
 const api = axios.create({
-    baseURL : "http://localhost:3000",
+    //baseURL : "http://localhost:3000",
+    baseURL : BASE_URL,
     withCredentials: true,
 })
 
@@ -85,12 +87,18 @@ export const getInterviewReportById = async (interviewId) => {
  * @description Service to get all interview reports of logged in user.
  */
 export const getAllInterviewReports = async () => {
-    try{
-        const response = await api.get("/api/interview/")
+    try {
+        // LocalStorage ya state se token read karein
+        const token = localStorage.getItem("token"); 
 
-        return response.data
-    }
-    catch (error) {
+        const response = await api.get("/api/interview", {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        });
+
+        return response.data;
+    } catch (error) {
         console.error("Error in getAllInterviewReports:", error.response?.data?.message || error.message);
         
         return {
@@ -99,7 +107,23 @@ export const getAllInterviewReports = async () => {
             status: error.response?.status || 500
         };
     }
-}
+};
+// export const getAllInterviewReports = async () => {
+//     try{
+//         const response = await api.get("/api/interview/")
+
+//         return response.data
+//     }
+//     catch (error) {
+//         console.error("Error in getAllInterviewReports:", error.response?.data?.message || error.message);
+        
+//         return {
+//             success: false,
+//             message: error.response?.data?.message || "Failed to fetch all interview report",
+//             status: error.response?.status || 500
+//         };
+//     }
+// }
 
 /**
  * @description Service to generate resume pdf based on user self description, resume content and job description.

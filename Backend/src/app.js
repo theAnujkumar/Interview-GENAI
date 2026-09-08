@@ -10,7 +10,7 @@ app.use(cookieParser())
 
 const allowedOrigins = [
   "http://localhost:5173",            // Local testing ke liye
-  "https://interview-genai-frontend.vercel.app"    // Vercel live URL (apna exact link daalein)
+  process.env.CLIENT_URL    // Vercel live URL
 ];
 
 app.use(cors({

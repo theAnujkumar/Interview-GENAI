@@ -147,7 +147,29 @@ const Home = () => {
             </div>
 
             {/* Recent Reports List */}
-            {reports.length > 0 && (
+            {Array.isArray(reports) && reports.length > 0 && (
+                <section className='recent-reports'>
+                    <h2>My Recent Interview Plans</h2>
+                    <ul className='reports-list'>
+                        {reports.map((report) => (
+                            <li 
+                                key={report?._id || Math.random()} 
+                                className='report-item' 
+                                onClick={() => report?._id && navigate(`/interview/${report._id}`)}
+                            >
+                                <h3>{report?.title || 'Untitled Position'}</h3>
+                                <p className='report-meta'>
+                                    Generated on {report?.createdAt ? new Date(report.createdAt).toLocaleDateString() : 'N/A'}
+                                </p>
+                                <p className={`match-score ${(report?.matchScore ?? 0) >= 80 ? 'score--high' : (report?.matchScore ?? 0) >= 60 ? 'score--mid' : 'score--low'}`}>
+                                    Match Score: {report?.matchScore ?? 0}%
+                                </p>
+                            </li>
+                        ))}
+                    </ul>
+                </section>
+            )}
+            {/* {reports?.length > 0 && (
                 <section className='recent-reports'>
                     <h2>My Recent Interview Plans</h2>
                     <ul className='reports-list'>
@@ -160,7 +182,7 @@ const Home = () => {
                         ))}
                     </ul>
                 </section>
-            )}
+            )} */}
 
             {/* Page Footer */}
             <footer className='page-footer'>
