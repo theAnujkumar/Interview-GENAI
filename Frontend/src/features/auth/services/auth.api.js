@@ -1,8 +1,10 @@
 import axios from "axios";
+const BASE_URL = import.meta.env.VITE_BASE_URL;
 
 // create an instance of axios with baseURL and headers
 const api = axios.create({
-  baseURL: "http://localhost:3000",
+  //baseURL: "http://localhost:3000",
+  baseURL : BASE_URL,
   withCredentials: true,
   headers: {
     "Content-Type": "application/json"
@@ -13,7 +15,7 @@ const api = axios.create({
 export async function register({username , email , password})
 {
     try{
-        const response = await api.post('api/auth/register', {
+        const response = await api.post('/api/auth/register', {
             username , email , password
         })
         console.log("frontend part");
@@ -31,7 +33,7 @@ export async function register({username , email , password})
 export async function login({email , password})
 {
     try{
-        const response = await api.post('api/auth/login', {
+        const response = await api.post('/api/auth/login', {
             email , password
         })
         console.log("frontend part");
@@ -49,7 +51,7 @@ export async function login({email , password})
 export async function logout()
 {
     try{
-        const response = await api.post('api/auth/logout')
+        const response = await api.post('/api/auth/logout')
         console.log("frontend part");
         console.log("LOGOUT API RESPONSE............", response)
         return response.data
@@ -65,7 +67,7 @@ export async function logout()
 export async function getMe()
 {
     try{
-        const response = await api.get('api/auth/get-me')
+        const response = await api.get('/api/auth/get-me')
         console.log("frontend part");
         console.log("getMe API RESPONSE............", response)
         return response.data

@@ -6,11 +6,30 @@ const cors = require("cors")
 const app = express()
 app.use(express.json())
 app.use(cookieParser())
+
+
+const allowedOrigins = [
+  'http://localhost:5173',                   // Aapka Local Vite Frontend
+  'https://your-frontend.vercel.app'          // Aapka Live Vercel Frontend URL
+];
+
 app.use(cors({
-    //origin: "http://localhost:5173",
-    origin:"*",
-    credentials: true
-}))
+  origin: function (origin, callback) {
+    // Postman ya same-origin requests ke liye (!origin)
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('CORS policy by-passed not allowed'));
+    }
+  },
+  credentials: true // Credentials allow karne ke liye ye true hona chahiye
+}));
+
+// app.use(cors({
+//     origin: "http://localhost:5173",
+//     //origin:"*",
+//     credentials: true
+// }))
 
 // require all routes here
 const authRouter = require("./routes/auth.routes")
