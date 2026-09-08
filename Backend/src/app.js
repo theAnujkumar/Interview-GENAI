@@ -8,33 +8,23 @@ app.use(express.json())
 app.use(cookieParser())
 
 
-const cors = require('cors');
-
 const allowedOrigins = [
-  'http://localhost:5173'
-  //'https://frontendxyz.vercel.app'
+  "http://localhost:5173",            // Local testing ke liye
+  "https://interview-genai-frontend.vercel.app"    // Vercel live URL (apna exact link daalein)
 ];
 
 app.use(cors({
   origin: function (origin, callback) {
-    // Postman / Mobile apps (!origin) allow karein
-    if (!origin) return callback(null, true);
-    
-    // Check if origin is in allowedOrigins or is a Vercel preview URL
-    const isAllowed = allowedOrigins.includes(origin) || origin.endsWith('.vercel.app');
-
-    if (isAllowed) {
+    if (!origin || allowedOrigins.includes(origin) || origin.endsWith('.vercel.app')) {
       callback(null, true);
     } else {
-      callback(new Error('Blocked by CORS policy'));
+      callback(new Error('Blocked by CORS'));
     }
   },
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
+  credentials: true
 }));
 
-// Explicitly handle preflight requests for all routes
+// Preflight OPTIONS requests handeling
 app.options('*', cors());
 
 
@@ -55,11 +45,11 @@ app.options('*', cors());
 //   credentials: true // Credentials allow karne ke liye ye true hona chahiye
 // }));
 
-// app.use(cors({
-//     origin: "http://localhost:5173",
-//     //origin:"*",
-//     credentials: true
-// }))
+app.use(cors({
+    origin: "http://localhost:5173",
+    //origin:"*",
+    credentials: true
+}))
 
 // require all routes here
 const authRouter = require("./routes/auth.routes")
