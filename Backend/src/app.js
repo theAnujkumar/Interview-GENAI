@@ -9,21 +9,42 @@ app.use(cookieParser())
 
 
 const allowedOrigins = [
-  'http://localhost:5173',                   // Aapka Local Vite Frontend
-  'https://your-frontend.vercel.app'          // Aapka Live Vercel Frontend URL
+  'http://localhost:5173',               // Local Testing
+  'https://projectxyz.vercel.app'        // Aapka Exact Vercel URL
 ];
 
 app.use(cors({
   origin: function (origin, callback) {
-    // Postman ya same-origin requests ke liye (!origin)
-    if (!origin || allowedOrigins.includes(origin)) {
+    if (!origin || allowedOrigins.indexOf(origin) !== -1) {
       callback(null, true);
     } else {
-      callback(new Error('CORS policy by-passed not allowed'));
+      callback(new Error('Not allowed by CORS'));
     }
   },
-  credentials: true // Credentials allow karne ke liye ye true hona chahiye
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
 }));
+
+// Preflight OPTIONS requests ko handle karne ke liye
+app.options('*', cors());
+
+// const allowedOrigins = [
+//   'http://localhost:5173',                   // Aapka Local Vite Frontend
+//   'https://your-frontend.vercel.app'          // Aapka Live Vercel Frontend URL
+// ];
+
+// app.use(cors({
+//   origin: function (origin, callback) {
+//     // Postman ya same-origin requests ke liye (!origin)
+//     if (!origin || allowedOrigins.includes(origin)) {
+//       callback(null, true);
+//     } else {
+//       callback(new Error('CORS policy by-passed not allowed'));
+//     }
+//   },
+//   credentials: true // Credentials allow karne ke liye ye true hona chahiye
+// }));
 
 // app.use(cors({
 //     origin: "http://localhost:5173",
