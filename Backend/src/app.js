@@ -10,7 +10,7 @@ app.use(cookieParser())
 
 const allowedOrigins = [
   'http://localhost:5173',               // Local Testing
-  'https://projectxyz.vercel.app'        // Aapka Exact Vercel URL
+  'https://your-frontend.vercel.app'        // Aapka Exact Vercel URL
 ];
 
 app.use(cors({
