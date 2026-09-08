@@ -15,17 +15,24 @@ const allowedOrigins = [
 
 app.use(cors({
   origin: function (origin, callback) {
-    if (!origin || allowedOrigins.includes(origin) || origin.endsWith('.vercel.app')) {
-      callback(null, true);
-    } else {
-      callback(new Error('Blocked by CORS'));
+    // Postman ya server-to-server calls ke liye (!origin)
+    if (!origin) return callback(null, true);
+    
+    // Check if origin matches allowed origins or any Vercel domain
+    if (allowedOrigins.includes(origin) || origin.endsWith('.vercel.app')) {
+      return callback(null, true);
     }
+    
+    return callback(new Error('CORS Not Allowed'));
   },
-  credentials: true
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
 }));
 
 // Preflight OPTIONS requests handeling
 // app.options('*', cors());
+
 
 
 // const allowedOrigins = [
