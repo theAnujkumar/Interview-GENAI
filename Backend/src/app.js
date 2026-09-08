@@ -52,11 +52,11 @@ app.use(cors({
 //   credentials: true // Credentials allow karne ke liye ye true hona chahiye
 // }));
 
-app.use(cors({
-    origin: "http://localhost:5173",
-    //origin:"*",
-    credentials: true
-}))
+// app.use(cors({
+//     origin: "http://localhost:5173",
+//     //origin:"*",
+//     credentials: true
+// }))
 
 // require all routes here
 const authRouter = require("./routes/auth.routes")
