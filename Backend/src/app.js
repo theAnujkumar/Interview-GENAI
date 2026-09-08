@@ -25,7 +25,7 @@ app.use(cors({
 }));
 
 // Preflight OPTIONS requests handeling
-app.options('*', cors());
+// app.options('*', cors());
 
 
 // const allowedOrigins = [
