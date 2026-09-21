@@ -89,7 +89,7 @@ export const getInterviewReportById = async (interviewId) => {
 export const getAllInterviewReports = async () => {
     try {
         // LocalStorage ya state se token read karein
-        const token = localStorage.getItem("token"); 
+        const token = localStorage.getItem("token");
 
         const response = await api.get("/api/interview", {
             headers: {

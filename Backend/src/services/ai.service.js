@@ -39,101 +39,215 @@ const interviewReportSchema = z.object({
 })
 
 // it will generate the interview report by using ai model like gemini
-async function generateInterviewReport({resume , selfDescription , jobDescription})
-{
-    const prompt = `Generate an interview report for a candidate with the following details:
-                        Resume: ${resume}
-                        Self Description: ${selfDescription}
-                        Job Description: ${jobDescription}
-`
-// 2.5 flash
-    // try{
-    //     const response = await ai.models.generateContent({
-    //         model: "gemini-2.5-flash",
-    //         contents: prompt,
-    //         config: {
-    //             responseMimeType: "application/json",
-    //             responseSchema: zodToJsonSchema(interviewReportSchema),
-    //         }
-    //         })
-    //         console.log("Raw gemini output ",response.text)
-    //         return JSON.parse(response.text)
-    // }
+// Helper for exponential delay
 
-    try {
-        const response = await ai.models.generateContent({
-            // Correct official model name
-            model: "gemini-3.5-flash", 
-            // model: "gemini-2.5-flash",
-            contents: prompt,
-            config: {
-                responseMimeType: "application/json",
-                // Passing Zod directly or clear schema
-                responseSchema: {
+const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+async function generateInterviewReport({ resume, selfDescription, jobDescription }) {
+    const prompt = `Generate a concise yet structured interview report for a candidate with the following details:
+Resume: ${resume}
+Self Description: ${selfDescription}
+Job Description: ${jobDescription}
+
+Provide clear, professional answers. Ensure technicalQuestions, behavioralQuestions, skillGaps, and preparationPlan are filled properly.`;
+
+    const schemaConfig = {
+        type: "OBJECT",
+        properties: {
+            matchScore: { type: "NUMBER" },
+            title: { type: "STRING" },
+            technicalQuestions: {
+                type: "ARRAY",
+                items: {
                     type: "OBJECT",
                     properties: {
-                        matchScore: { type: "NUMBER" },
-                        title: { type: "STRING" },
-                        technicalQuestions: {
-                            type: "ARRAY",
-                            items: {
-                                type: "OBJECT",
-                                properties: {
-                                    question: { type: "STRING" },
-                                    intention: { type: "STRING" },
-                                    answer: { type: "STRING" }
-                                }
-                            }
-                        },
-                        behavioralQuestions: {
-                            type: "ARRAY",
-                            items: {
-                                type: "OBJECT",
-                                properties: {
-                                    question: { type: "STRING" },
-                                    intention: { type: "STRING" },
-                                    answer: { type: "STRING" }
-                                }
-                            }
-                        },
-                        skillGaps: {
-                            type: "ARRAY",
-                            items: {
-                                type: "OBJECT",
-                                properties: {
-                                    skill: { type: "STRING" },
-                                    severity: { type: "STRING", enum: ["low", "medium", "high"] }
-                                }
-                            }
-                        },
-                        preparationPlan: {
-                            type: "ARRAY",
-                            items: {
-                                type: "OBJECT",
-                                properties: {
-                                    day: { type: "NUMBER" },
-                                    focus: { type: "STRING" },
-                                    tasks: { type: "ARRAY", items: { type: "STRING" } }
-                                }
-                            }
-                        }
-                    }
+                        question: { type: "STRING" },
+                        intention: { type: "STRING" },
+                        answer: { type: "STRING" }
+                    },
+                    required: ["question", "intention", "answer"]
+                }
+            },
+            behavioralQuestions: {
+                type: "ARRAY",
+                items: {
+                    type: "OBJECT",
+                    properties: {
+                        question: { type: "STRING" },
+                        intention: { type: "STRING" },
+                        answer: { type: "STRING" }
+                    },
+                    required: ["question", "intention", "answer"]
+                }
+            },
+            skillGaps: {
+                type: "ARRAY",
+                items: {
+                    type: "OBJECT",
+                    properties: {
+                        skill: { type: "STRING" },
+                        severity: { type: "STRING", enum: ["low", "medium", "high"] }
+                    },
+                    required: ["skill", "severity"]
+                }
+            },
+            preparationPlan: {
+                type: "ARRAY",
+                items: {
+                    type: "OBJECT",
+                    properties: {
+                        day: { type: "NUMBER" },
+                        focus: { type: "STRING" },
+                        tasks: { type: "ARRAY", items: { type: "STRING" } }
+                    },
+                    required: ["day", "focus", "tasks"]
                 }
             }
-        });
+        },
+        required: ["matchScore", "title", "technicalQuestions", "behavioralQuestions", "skillGaps", "preparationPlan"]
+    };
 
-        console.log("Raw Gemini Output:", response.text);
-        // this response would send to server or interview controller
-        // to this interViewReportByAi
-        return JSON.parse(response.text);
+    const targetModel = "gemini-3.6-flash";
+    const maxAttempts = 4;
 
+    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+        try {
+            console.log(`Trying Gemini API with model: ${targetModel} (Attempt ${attempt}/${maxAttempts})`);
+
+            const response = await ai.models.generateContent({
+                model: targetModel,
+                contents: prompt,
+                config: {
+                    responseMimeType: "application/json",
+                    maxOutputTokens: 8192,
+                    responseSchema: schemaConfig
+                }
+            });
+
+            let rawText = (response?.text || "").trim();
+            if (rawText.startsWith("```json")) {
+                rawText = rawText.replace(/^```json\s*/, "").replace(/\s*```$/, "");
+            } else if (rawText.startsWith("```")) {
+                rawText = rawText.replace(/^```\s*/, "").replace(/\s*```$/, "");
+            }
+
+            return JSON.parse(rawText);
+
+        } catch (error) {
+            const is503 = error.status === 503 || error.message?.includes("503") || error.message?.includes("UNAVAILABLE");
+
+            console.warn(`Attempt ${attempt} failed:`, error.message);
+
+            if (is503 && attempt < maxAttempts) {
+                // Extended delay strategy: 4s, 8s, 12s
+                const waitTime = attempt * 4000;
+                console.log(`Google servers busy. Retrying in ${waitTime / 1000}s...`);
+                await delay(waitTime);
+                continue;
+            }
+
+            throw error;
+        }
     }
-    catch (error) {
-        console.error("AI Generation Error:", error);
-        throw new Error("Failed to generate report from Gemini AI");
-    }
 
+    throw new Error("Gemini AI service is currently experiencing extremely heavy traffic. Please try again in 15-20 seconds.");
 }
+
+// async function generateInterviewReport({resume , selfDescription , jobDescription})
+// {
+//     const prompt = `Generate an interview report for a candidate with the following details:
+//                         Resume: ${resume}
+//                         Self Description: ${selfDescription}
+//                         Job Description: ${jobDescription}
+// `
+// // 2.5 flash
+//     // try{
+//     //     const response = await ai.models.generateContent({
+//     //         model: "gemini-2.5-flash",
+//     //         contents: prompt,
+//     //         config: {
+//     //             responseMimeType: "application/json",
+//     //             responseSchema: zodToJsonSchema(interviewReportSchema),
+//     //         }
+//     //         })
+//     //         console.log("Raw gemini output ",response.text)
+//     //         return JSON.parse(response.text)
+//     // }
+
+//     try {
+//         const response = await ai.models.generateContent({
+//             // Correct official model name
+//             model: "gemini-3.5-flash", 
+//             // model: "gemini-2.5-flash",
+//             contents: prompt,
+//             config: {
+//                 responseMimeType: "application/json",
+//                 // Passing Zod directly or clear schema
+//                 responseSchema: {
+//                     type: "OBJECT",
+//                     properties: {
+//                         matchScore: { type: "NUMBER" },
+//                         title: { type: "STRING" },
+//                         technicalQuestions: {
+//                             type: "ARRAY",
+//                             items: {
+//                                 type: "OBJECT",
+//                                 properties: {
+//                                     question: { type: "STRING" },
+//                                     intention: { type: "STRING" },
+//                                     answer: { type: "STRING" }
+//                                 }
+//                             }
+//                         },
+//                         behavioralQuestions: {
+//                             type: "ARRAY",
+//                             items: {
+//                                 type: "OBJECT",
+//                                 properties: {
+//                                     question: { type: "STRING" },
+//                                     intention: { type: "STRING" },
+//                                     answer: { type: "STRING" }
+//                                 }
+//                             }
+//                         },
+//                         skillGaps: {
+//                             type: "ARRAY",
+//                             items: {
+//                                 type: "OBJECT",
+//                                 properties: {
+//                                     skill: { type: "STRING" },
+//                                     severity: { type: "STRING", enum: ["low", "medium", "high"] }
+//                                 }
+//                             }
+//                         },
+//                         preparationPlan: {
+//                             type: "ARRAY",
+//                             items: {
+//                                 type: "OBJECT",
+//                                 properties: {
+//                                     day: { type: "NUMBER" },
+//                                     focus: { type: "STRING" },
+//                                     tasks: { type: "ARRAY", items: { type: "STRING" } }
+//                                 }
+//                             }
+//                         }
+//                     }
+//                 }
+//             }
+//         });
+
+//         console.log("Raw Gemini Output:", response.text);
+//         // this response would send to server or interview controller
+//         // to this interViewReportByAi
+//         return JSON.parse(response.text);
+
+//     }
+//     catch (error) {
+//         console.error("AI Generation Error:", error);
+//         throw new Error("Failed to generate report from Gemini AI");
+//     }
+
+// }
 
 // async function generatePdfFromHtml(htmlContent)
 // {
