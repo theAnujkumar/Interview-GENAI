@@ -22,7 +22,7 @@ export async function register({username , email , password})
         console.log("Register API RESPONSE............", response)
 
         localStorage.setItem("token", JSON.stringify(response.data.token));
-        
+
         return response.data
     }
     catch(err)
@@ -43,6 +43,8 @@ export async function login({email , password})
         console.log("LOGIN API RESPONSE............", response)
 
         localStorage.setItem("token", JSON.stringify(response.data.token));
+        
+        console.log("response data of login ",response.data)
 
         return response.data
     }

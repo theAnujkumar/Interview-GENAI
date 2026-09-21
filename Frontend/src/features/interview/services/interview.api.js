@@ -96,7 +96,7 @@ export const getAllInterviewReports = async () => {
                 Authorization: `Bearer ${token}`
             }
         });
-
+        //console.log()
         return response.data;
     } catch (error) {
         console.error("Error in getAllInterviewReports:", error.response?.data?.message || error.message);
