@@ -2,6 +2,7 @@
 //const pdfParse = require("pdf-parse-fork");
 //const PDFParser = require("pdf2json");
 const { extractText } = require("unpdf");
+const mongoose = require('mongoose');
 const {generateInterviewReport , generateResumePdf} = require("../services/ai.service")
 const interviewReportModel = require("../models/interviewReport.model");
 const { success } = require("zod");
