@@ -128,6 +128,8 @@ async function loginUserController(req,res)
 
     // create cookie and return response
     const options = {
+        secure: true,     // Render par HTTPS hota hai, isliye TRUE zaroori hai
+        sameSite: "none", // Vercel -> Render cross-domain call ke liye 'none' mandatory hai
         expires : new Date(Date.now() + 3*24*60*60*1000),
         httpOnly : true,
     }
