@@ -74,37 +74,65 @@ export const useInterview = () => {
     };
 
     const getReportById = async(interviewId) => {
+        if (!interviewId) {
+            console.warn("Invalid or missing interviewId");
+            setReport(null);
+            return;
+        }
         setLoading(true)
-        let response = null
-        console.log("interview id is " ,interviewId)
-        try{
-            response = await getInterviewReportById(interviewId)
-            setReport(response.interviewReport)
-        }
-        catch(error)
-        {
-            console.log(error)
-            console.log("Cannot get interview report")
-        }
-        finally{
-            setLoading(false)
+        try {
+            console.log("Fetching interview report for ID:", interviewId);
+            const response = await getInterviewReportById(interviewId);
+            
+            // Safe Optional Chaining & Data Check
+            if (response?.interviewReport) {
+                setReport(response.interviewReport);
+            } else if (response?.data?.interviewReport) {
+                // Support for nested axios response wrapper if present
+                setReport(response.data.interviewReport);
+            } else {
+                console.warn("Report not found in API response:", response);
+                setReport(null);
+                toast.error("Interview report not found");
+            }
+        } 
+        catch (error) {
+            console.error("Cannot get interview report:", error);
+            setReport(null); // Clear previous stale report on error
+            toast.error(error.response?.data?.message || "Failed to load report");
+        } 
+        finally {
+            setLoading(false);
         }
     }
 
     const getReports = async () => {
-        setLoading(true)
-        let response = null
+        setLoading(true);
+        let reportsData = [];
         try {
-            response = await getAllInterviewReports()
-            setReports(response.interviewReports)
+            const response = await getAllInterviewReports();
+            
+            // Safe extraction with array fallback
+            if (response?.interviewReports && Array.isArray(response.interviewReports)) {
+                reportsData = response.interviewReports;
+            } else if (response?.data && Array.isArray(response.data)) {
+                reportsData = response.data;
+            } else if (Array.isArray(response)) {
+                reportsData = response;
+            } else {
+                console.warn("Unexpected reports format:", response);
+            }
+
+            setReports(reportsData);
         } catch (error) {
-            console.log(error)
+            console.error("Failed to fetch reports:", error);
+            setReports([]); // Ensure state is always an array
         } finally {
-            setLoading(false)
+            setLoading(false);
         }
 
-        return response.interviewReports
-    }
+        return reportsData; // Always returns an array, never undefined/null
+};
 
     const getResumePdf = async (interviewReportId) => {
         setLoading(true)
@@ -137,3 +165,39 @@ export const useInterview = () => {
     return { loading, report, reports, generateReport, getReportById, getReports , getResumePdf }
 }
 
+/*
+const getReports = async () => {
+        setLoading(true)
+        let response = null
+        try {
+            response = await getAllInterviewReports()
+            setReports(response.interviewReports)
+        } catch (error) {
+            console.log(error)
+        } finally {
+            setLoading(false)
+        }
+
+        return response.interviewReports
+    }
+*/
+
+/*
+useEffect(() => {
+    let isMounted = true; // Prevents state updates on unmounted components
+
+    const loadData = async () => {
+        if (interviewId) {
+            await getReportById(interviewId);
+        } else {
+            await getReports();
+        }
+    };
+
+    loadData();
+
+    return () => {
+        isMounted = false; // Cleanup flag
+    };
+}, [interviewId]); // Depend on interviewId
+*/

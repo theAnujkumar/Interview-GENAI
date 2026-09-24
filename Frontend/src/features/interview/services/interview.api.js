@@ -64,8 +64,12 @@ export const getInterviewReportById = async (interviewId) => {
 
     try {
         //console.log("Fetching report for interview ID:", interviewId);
-        const response = await api.get(`/api/interview/report/${interviewId}`);
+        //const response = await api.get(`/api/interview/report/${interviewId}`);
+        const token = localStorage.getItem("token");
         
+        const response = await api.get(`/api/interview/report/${interviewId}`, {
+            headers: token ? { Authorization: `Bearer ${token}` } : {}
+        });
         // return {
         //     success: true,
         //     data: response.data
@@ -91,12 +95,21 @@ export const getAllInterviewReports = async () => {
         // LocalStorage ya state se token read karein
         const token = localStorage.getItem("token");
 
+        // 1. Guard Clause: Token missing ho toh API hit mat karo
+        if (!token) {
+            return {
+                success: false,
+                reports: [],
+                message: "No token found"
+            };
+        }
+        
         const response = await api.get("/api/interview", {
             headers: {
                 Authorization: `Bearer ${token}`
             }
         });
-        //console.log()
+        console.log("response data of getAllInterviewReports ",response.data)
         return response.data;
     } catch (error) {
         console.error("Error in getAllInterviewReports:", error.response?.data?.message || error.message);

@@ -3,6 +3,7 @@ import "../style/home.scss"
 import { useNavigate } from "react-router";
 import { useInterview } from "../hooks/useInterview";
 import { useState } from "react";
+import { logout } from "../../auth/services/auth.api";
 
 // now fetch 6 things from useInterview.js in hooks
 const Home = () => {
@@ -183,6 +184,25 @@ const Home = () => {
                     </ul>
                 </section>
             )} */}
+
+            {/* add logout button */}
+
+            <button 
+                onClick={async () => {
+                    try {
+                        await logout();
+                        navigate("/login")
+                    } catch (error) {
+                        console.error("Logout failed:", error);
+                    }
+                }}
+                className='generate-btn'
+            >
+                <div>
+                    <span>Logout</span>
+                </div>
+            </button>
+
 
             {/* Page Footer */}
             <footer className='page-footer'>

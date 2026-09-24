@@ -13,11 +13,30 @@ const Login = () => {
     const [password , setPassword] = useState("")
 
     // on submit it would call handleLogin in hooks then call to backend
-    const handleSubmit = async(e) => {
+    // const handleSubmit = async(e) => {
+    //     e.preventDefault()
+    //     handleLogin({email,password})
+    //     navigate("/")
+    // }
+    const handleSubmit = async (e) => {
         e.preventDefault()
-        handleLogin({email,password})
-        navigate("/")
-    }
+        // 1. handleLogin execute hoga aur user state update karega
+        const isSuccess = await handleLogin({email,password})
+        
+        // 2. Agar login success hua tabhi turant navigate hoga
+        if (isSuccess) {
+            navigate('/'); // Yahan apna main route daalein
+        }
+    };
+    // const handleSubmit = async (data) => {
+    //     // 1. handleLogin execute hoga aur user state update karega
+    //     const isSuccess = await handleLogin(data);
+        
+    //     // 2. Agar login success hua tabhi turant navigate hoga
+    //     if (isSuccess) {
+    //         navigate('/'); // Yahan apna main route daalein
+    //     }
+    // };
 
     if(loading){
         return (<main><h1>Loading.......</h1></main>)

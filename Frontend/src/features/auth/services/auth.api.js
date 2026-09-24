@@ -11,6 +11,7 @@ const api = axios.create({
   }
 });
 
+import { toast } from "react-hot-toast"
 
 export async function register({username , email , password})
 {
@@ -21,8 +22,10 @@ export async function register({username , email , password})
         console.log("frontend part");
         console.log("Register API RESPONSE............", response)
 
-        localStorage.setItem("token", JSON.stringify(response.data.token));
-
+        // now set token into localStorage
+        // if (response.data?.token) {
+        //     localStorage.setItem("token", response.data.token);
+        // }
         return response.data
     }
     catch(err)
@@ -30,19 +33,25 @@ export async function register({username , email , password})
         console.log("frontend part");
         console.log("Register API ERROR............", err)
         toast.error("Registered User Failed")
+        throw err;
     }
 }
 
 export async function login({email , password})
 {
     try{
+        // call to backend and get response from backend
         const response = await api.post('/api/auth/login', {
             email , password
         })
         console.log("frontend part");
         console.log("LOGIN API RESPONSE............", response)
 
-        localStorage.setItem("token", JSON.stringify(response.data.token));
+        // now set token into localStorage
+        if (response.data?.token) {
+            localStorage.setItem("token", response.data.token);
+        }
+        //localStorage.setItem("token", JSON.stringify(response.data.token));
         
         console.log("response data of login ",response.data)
 
@@ -52,14 +61,15 @@ export async function login({email , password})
     {
         console.log("frontend part");
         console.log("LOGIN API ERROR............", err)
-        toast.error("Login Failed")
+        toast.error(err.response?.data?.message || "Login Failed")
+        throw err;
     }
 }
 
 export async function logout()
 {
     try{
-        const response = await api.post('/api/auth/logout')
+        const response = await api.get('/api/auth/logout')
         console.log("frontend part");
         console.log("LOGOUT API RESPONSE............", response)
         return response.data
@@ -70,23 +80,58 @@ export async function logout()
         console.log("LOGOUT API ERROR............", err)
         toast.error("LOGOUT Failed")
     }
+    finally {
+        // ALWAYS remove token from client storage
+        localStorage.removeItem("token");
+    }
 }
 
-export async function getMe()
-{
-    try{
-        const response = await api.get('/api/auth/get-me')
+export async function getMe() {
+    try {
+        const token = localStorage.getItem("token");
+
+        // Guard Clause: Agar local storage me token nahi hai toh network request na karein
+        if (!token) {
+            return { success: false, user: null, message: "No token found" };
+        }
+
+        const response = await api.get('/api/auth/get-me', {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        });
+
         console.log("frontend part");
-        console.log("getMe API RESPONSE............", response)
-        return response.data
-    }
-    catch(err)
-    {
+        console.log("getMe API RESPONSE............", response.data);
+
+        return response.data;
+    } catch (err) {
         console.log("frontend part");
-        console.log("getMe API ERROR............", err)
-        toast.error("getMe Failed")
+        console.warn("getMe API ERROR............", err.response?.data?.message || err.message);
+
+        // Toast error REMOVED (Guest/logged-out flow me error toast nahi dikhana chahiye)
+        return {
+            success: false,
+            user: null,
+            message: err.response?.data?.message || "Unauthorized"
+        };
     }
 }
+// export async function getMe()
+// {
+//     try{
+//         const response = await api.get('/api/auth/get-me')
+//         console.log("frontend part");
+//         console.log("getMe API RESPONSE............", response)
+//         return response.data
+//     }
+//     catch(err)
+//     {
+//         console.log("frontend part");
+//         console.log("getMe API ERROR............", err)
+//         toast.error("getMe Failed")
+//     }
+// }
 
 // create api layer for authentication, using axios to make api calls to the backend.
 // communicate with backend and get data from backend and return data to hook layer.

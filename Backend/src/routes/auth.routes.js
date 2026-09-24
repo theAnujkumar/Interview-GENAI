@@ -31,7 +31,7 @@ authRouter.post('/login', authController.loginUserController)
 
 
 /**
- * @route POST /api/auth/logout
+ * @route GET /api/auth/logout
  * @desc clear token from user cookie and add the token in blacklist
  * @access Public
  */

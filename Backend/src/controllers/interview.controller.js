@@ -3,7 +3,8 @@
 //const PDFParser = require("pdf2json");
 const { extractText } = require("unpdf");
 const {generateInterviewReport , generateResumePdf} = require("../services/ai.service")
-const interviewReportModel = require("../models/interviewReport.model")
+const interviewReportModel = require("../models/interviewReport.model");
+const { success } = require("zod");
 
 
 /**
@@ -153,10 +154,24 @@ async function getInterviewReportByIdController(req,res) {
     try{
         const {interviewId} = req.params
 
-        const interviewReport = await interviewReportModel.findOne({_id:interviewId , user: req.user.id})
+        // 1. Validate Mongoose ObjectId format to prevent CastError crashes
+        if (!mongoose.Types.ObjectId.isValid(interviewId)) {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid Interview ID format."
+            });
+        }
+
+        const userId = req.user?.id || req.user?._id;
+
+        const interviewReport = await interviewReportModel.findOne({
+            _id: interviewId,
+            user: userId
+        });
 
         if (!interviewReport) {
             return res.status(404).json({
+                success: false,
                 message: "Interview report not found."
             })
         }
@@ -181,10 +196,25 @@ async function getInterviewReportByIdController(req,res) {
  */ 
 async function getAllInterviewReportsController(req,res) {
     try{
-        const interviewReports = await interviewReportModel.find({user: req.user.id}).sort({ createdAt: -1 }).select("-resume -selfDescription -jobDescription -__v -technicalQuestions -behavioralQuestions -skillGaps -preparationPlan")
+
+        const userId = req.user?.id || req.user?._id;
+
+        if (!userId) {
+            return res.status(401).json({
+                success: false,
+                message: "Unauthorized: User ID missing"
+            });
+        }
+
+        const interviewReports = await interviewReportModel.find({user: userId})
+        .sort({ createdAt: -1 })
+        .select("-resume -selfDescription -jobDescription -__v -technicalQuestions -behavioralQuestions -skillGaps -preparationPlan")
+
 
         res.status(200).json({
+            success : true,
             message: "Interview reports fetched successfully.",
+            count: interviewReports.length,
             interviewReports
         })
     }
@@ -192,7 +222,7 @@ async function getAllInterviewReportsController(req,res) {
     {
         console.log(err);
         return res.status(500).json({
-            success:false,
+            success: false,
             message: "Unable to get all Interview report of logged in user. please try again",
         })
     }

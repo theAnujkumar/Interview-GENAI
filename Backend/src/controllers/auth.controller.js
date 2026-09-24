@@ -121,10 +121,20 @@ async function loginUserController(req,res)
         process.env.JWT_SECRET,
         {expiresIn : "1h"}
     )
-    res.cookie("token",token)
+
+    // Save token to user document in database
+    // user.token = token;
+    // user.password = undefined;
+
+    // create cookie and return response
+    const options = {
+        expires : new Date(Date.now() + 3*24*60*60*1000),
+        httpOnly : true,
+    }
+    res.cookie("token",token,options)
     res.status(200).json({
         success:true,
-        token,
+        token, // Front-end Bearer Token fallback ke liye bhej rahe hain
         message:"User logged in successfully",
         user:{
             id: user._id,
@@ -149,35 +159,72 @@ async function loginUserController(req,res)
  * @description clear token from user cookie and add the token in blacklist
  * @access public
  */
-async function logoutUserController(req, res) 
-{
-    try{
-    const token = req.cookies.token
+async function logoutUserController(req, res) {
+    try {
+        // 1. Extract token from Cookie OR Authorization Header
+        let token = req.cookies?.token;
 
-    // token should be go to token black list
-    if(token)
-    {
-        await tokenBlacklistModel.create({token})
-    }
+        if (!token && req.headers.authorization && req.headers.authorization.startsWith("Bearer ")) {
+            token = req.headers.authorization.split(" ")[1];
+        }
 
-    // token remove from cookies
-    res.clearCookie("token")
+        // 2. Add to Blacklist Database if present
+        if (token) {
+            // Optional: duplicate key error handle karne ke liye try-catch ya findOneAndUpdate
+            await tokenBlacklistModel.create({ token }).catch(err => {
+                console.warn("Token already blacklisted or duplicate:", err.message);
+            });
+        }
 
-    res.status(200).json({
-        success : true,
-        message: "User logged out successfully"
-    })
+        // 3. Clear Cookie with EXACT matching options used during Login
+        const options = {
+            httpOnly : true,
+        }
 
-    }
-    catch(error)
-    {
-        console.log(error);
+        res.clearCookie("token", options);
+
+        return res.status(200).json({
+            success: true,
+            message: "User logged out successfully"
+        });
+
+    } catch (error) {
+        console.error("Logout Controller Error:", error);
         return res.status(500).json({
-            success:false,
-            message: "logout failure . please try again",
-        })
+            success: false,
+            message: "Logout failure. Please try again"
+        });
     }
 }
+// async function logoutUserController(req, res) 
+// {
+//     try{
+//     const token = req.cookies.token
+
+//     // token should be go to token black list
+//     if(token)
+//     {
+//         await tokenBlacklistModel.create({token})
+//     }
+
+//     // token remove from cookies
+//     res.clearCookie("token")
+
+//     res.status(200).json({
+//         success : true,
+//         message: "User logged out successfully"
+//     })
+
+//     }
+//     catch(error)
+//     {
+//         console.log(error);
+//         return res.status(500).json({
+//             success:false,
+//             message: "logout failure . please try again",
+//         })
+//     }
+// }
 
 /**
  * @name getMeController
