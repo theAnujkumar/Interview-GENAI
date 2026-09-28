@@ -1,9 +1,8 @@
-import React, { useRef } from "react";
+import React, { useRef, useState } from "react";
 import "../style/home.scss"
 import { useNavigate } from "react-router";
 import { useInterview } from "../hooks/useInterview";
-import { useState } from "react";
-import { logout } from "../../auth/services/auth.api";
+import LogoutConfirmation from "../components/LogoutConfirmation";
 
 // now fetch 6 things from useInterview.js in hooks
 const Home = () => {
@@ -45,6 +44,15 @@ const Home = () => {
             </main>
         )
     }
+
+    // if (loading) {
+    //     return (
+    //     <div className="grid flex-1 place-items-center">
+    //         <div className="spinner"></div>
+    //     </div>
+    //     )
+    // }
+    
 
     // in useinterview.js report return response remember
     
@@ -185,23 +193,7 @@ const Home = () => {
                 </section>
             )} */}
 
-            {/* add logout button */}
-
-            <button 
-                onClick={async () => {
-                    try {
-                        await logout();
-                        navigate("/login")
-                    } catch (error) {
-                        console.error("Logout failed:", error);
-                    }
-                }}
-                className='generate-btn'
-            >
-                <div>
-                    <span>Logout</span>
-                </div>
-            </button>
+            <LogoutConfirmation />
 
 
             {/* Page Footer */}

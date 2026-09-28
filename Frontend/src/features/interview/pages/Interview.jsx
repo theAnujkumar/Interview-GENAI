@@ -69,7 +69,6 @@ const Interview = () => {
     }, [ interviewId ])
 
 
-
     if (loading || !report) {
         return (
             <main className='loading-screen'>
@@ -77,6 +76,14 @@ const Interview = () => {
             </main>
         )
     }
+    // if (loading || !report) {
+    //     return (
+    //     <div className="grid flex-1 place-items-center">
+    //         <div className="spinner"></div>
+    //     </div>
+    //     )
+    // }
+    
 
     const scoreColor =
         report.matchScore >= 80 ? 'score--high' :

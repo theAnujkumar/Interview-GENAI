@@ -1,14 +1,17 @@
-main{
+main {
     min-height: 100vh;
     width: 100%;
+    padding: 1.5rem;
+    box-sizing: border-box;
 
     display: flex;
     justify-content: center;
     align-items: center;
 
-
-    .form-container{
-        min-width: 350px;
+    .form-container {
+        width: 100%;
+        max-width: 350px;
+        min-width: 0;
 
         display: flex;
         flex-direction: column;
@@ -40,5 +43,96 @@ main{
     a{
         color: #e1034d;
         text-decoration: none;
+    }
+
+    .input-group input {
+        box-sizing: border-box;
+        width: 100%;
+    }
+
+    .password-input-wrapper {
+        position: relative;
+
+        input {
+            padding-right: 4.5rem;
+        }
+    }
+
+    .password-toggle {
+        position: absolute;
+        top: 50%;
+        right: 0.75rem;
+        width: auto;
+        min-height: 0;
+        padding: 0.25rem;
+        border: 0;
+        background: transparent;
+        color: #e1034d;
+        cursor: pointer;
+        transform: translateY(-50%);
+
+        .password-eye-icon {
+            position: relative;
+            display: block;
+            box-sizing: border-box;
+            width: 1.35rem;
+            height: 1.5rem;
+
+            &::before {
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                box-sizing: border-box;
+                width: 0.72rem;
+                height: 0.72rem;
+                border: 2px solid currentColor;
+                border-radius: 75% 15%;
+                content: "";
+                transform: translate(-50%, -50%) rotate(45deg);
+            }
+
+            &::after {
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                width: 0.3rem;
+                height: 0.3rem;
+                background: currentColor;
+                border-radius: 50%;
+                content: "";
+                transform: translate(-50%, -50%);
+            }
+        }
+
+        .password-eye-slash {
+            position: absolute;
+            top: 50%;
+            left: -0.2rem;
+            width: 1.5rem;
+            height: 2px;
+            background: currentColor;
+            transform: translateY(-50%) rotate(-45deg);
+        }
+    }
+
+    button {
+        min-height: 44px;
+    }
+
+    // style for small screens
+    @media (max-width: 480px) {
+        padding: 1rem;
+                background: currentColor;
+        .form-container {
+            max-width: 100%;
+        }
+
+        h1 {
+            font-size: 1.75rem;
+        }
+
+        button {
+            width: 100%;
+        }
     }
 }

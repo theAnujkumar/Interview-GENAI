@@ -11,6 +11,7 @@ const Register = () => {
     const [username , setUsername] = useState("")
     const [email , setEmail] = useState("")
     const [password , setPassword] = useState("")
+    const [showPassword, setShowPassword] = useState(false)
 
     const handleSubmit = async(e) => {
         e.preventDefault()
@@ -41,9 +42,22 @@ const Register = () => {
                     </div>
                     <div className="input-group">
                         <label htmlFor="password">Password</label>
-                        <input 
-                            onChange={(e) => setPassword(e.target.value)} 
-                            type="password" id="password" name='password' placeholder='Enter password'/>
+                        <div className="password-input-wrapper">
+                            <input 
+                                onChange={(e) => setPassword(e.target.value)} 
+                                type={showPassword ? "text" : "password"} id="password" name='password' placeholder='Enter password'/>
+                            <button
+                                className="password-toggle"
+                                type="button"
+                                aria-label={showPassword ? "Hide password" : "Show password"}
+                                aria-pressed={showPassword}
+                                onClick={() => setShowPassword((visible) => !visible)}
+                            >
+                                <span className="password-eye-icon" aria-hidden="true">
+                                    {showPassword && <span className="password-eye-slash" />}
+                                </span>
+                            </button>
+                        </div>
                     </div>
                     <button className='button primary-button' >Register</button>
                 </form>

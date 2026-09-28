@@ -11,6 +11,7 @@ const Login = () => {
 
     const [email , setEmail] = useState("")
     const [password , setPassword] = useState("")
+    const [showPassword, setShowPassword] = useState(false)
 
     // on submit it would call handleLogin in hooks then call to backend
     // const handleSubmit = async(e) => {
@@ -55,9 +56,22 @@ const Login = () => {
                     </div>
                     <div className="input-group">
                         <label htmlFor="password">Password</label>
-                        <input 
-                            onChange={(e) => setPassword(e.target.value)} 
-                            type="password" id="password" name='password' placeholder='Enter password'/>
+                        <div className="password-input-wrapper">
+                            <input 
+                                onChange={(e) => setPassword(e.target.value)} 
+                                type={showPassword ? "text" : "password"} id="password" name='password' placeholder='Enter password'/>
+                            <button
+                                className="password-toggle"
+                                type="button"
+                                aria-label={showPassword ? "Hide password" : "Show password"}
+                                aria-pressed={showPassword}
+                                onClick={() => setShowPassword((visible) => !visible)}
+                            >
+                                <span className="password-eye-icon" aria-hidden="true">
+                                    {showPassword && <span className="password-eye-slash" />}
+                                </span>
+                            </button>
+                        </div>
                     </div>
                     <button className='button primary-button' >Login</button>
                 </form>
