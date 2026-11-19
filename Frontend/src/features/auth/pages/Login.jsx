@@ -26,7 +26,7 @@ const Login = () => {
         
         // 2. Agar login success hua tabhi turant navigate hoga
         if (isSuccess) {
-            navigate('/'); // Yahan apna main route daalein
+            navigate('/'); 
         }
     };
     // const handleSubmit = async (data) => {
