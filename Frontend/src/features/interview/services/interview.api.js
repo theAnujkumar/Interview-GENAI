@@ -74,6 +74,7 @@ export const getInterviewReportById = async (interviewId) => {
         //     success: true,
         //     data: response.data
         // };
+        console.log("response data of get InterviewReport by Id ",response.data)
         return response.data
     }
     catch (error) {
